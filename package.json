@@ -1,0 +1,32 @@
+{
+  "name": "dpets",
+  "version": "1.0.0",
+  "description": "Decentralized app for tracking pet records",
+  "main": "index.js",
+  "dependencies": {
+    "babel-core": "^6.9.1",
+    "babel-loader": "^6.2.4",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-react": "^6.5.0",
+    "classnames": "^2.2.5",
+    "express": "^4.14.0",
+    "flexboxgrid": "^6.3.0",
+    "json-loader": "^0.5.4",
+    "material-ui": "^0.15.0",
+    "open": "0.0.5",
+    "react": "^15.1.0",
+    "react-dom": "^15.1.0",
+    "react-flexbox-grid": "^0.9.6",
+    "react-tap-event-plugin": "^1.0.0",
+    "web3": "^0.17.0-alpha",
+    "webpack": "^1.13.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack -d --watch",
+    "build": "webpack -p"
+  },
+  "author": "Daniel Stahl",
+  "license": "ISC"
+}
