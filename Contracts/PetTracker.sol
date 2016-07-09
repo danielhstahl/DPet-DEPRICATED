@@ -8,12 +8,22 @@
   }
 }*/
 contract PetTracker{
-    enum PossibleAttributes{
+    enum PossibleAttributes{ //for some reason this doesn't actually constrain the possible types...probably make this into an mapping at some point
         Name,
         Address,
         Temperament,
-        Incident
+        Incident,
+        Owner
     }
+    //struct PossibleAttributes()
+    //string[] constant PossibleAttributes=string[6];
+    /*PossibleAttributes[0]="Name"; 
+    PossibleAttributes[1]="Address"; 
+    PossibleAttributes[2]="Name"; 
+    PossibleAttributes[3]="Name"; 
+    PossibleAttributes[4]="Name"; 
+    PossibleAttributes[5]="Name";*/
+
     uint256 constant public costToAdd=1000000000000000000;//way too high lol.  one ether
     uint256 public collectedRevenue=0; //collectedRevenue stores collected revenue
     address public owner;
