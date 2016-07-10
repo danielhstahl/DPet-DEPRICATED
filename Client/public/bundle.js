@@ -122,7 +122,8 @@
 	];
 	
 	web3.eth.defaultAccount = web3.eth.accounts[0];
-	var contract = web3.eth.contract(abi).at('0x3c8F2e129587DcD3bD418d52646966C8686a06AE'); //'0xdC2960Aed131B3D9052a11810e5c57bD08Fa79F6'
+	var contractAddress = '0x44549eD75e1940b2E1B5533a3c28E81E28eEA2a5'; //  '0x3c8F2e129587DcD3bD418d52646966C8686a06AE';
+	var contract = web3.eth.contract(abi).at(contractAddress); //'0xdC2960Aed131B3D9052a11810e5c57bD08Fa79F6'
 	var Main = _react2.default.createClass({
 	    displayName: 'Main',
 	    getInitialState: function getInitialState() {
@@ -268,7 +269,7 @@
 	                        _Button2.default,
 	                        { bsStyle: 'success', onClick: this.claimReward },
 	                        'Claim Reward [Currently ',
-	                        contract.collectedRevenue().toString(),
+	                        web3.eth.getBalance(contractAddress).toString(),
 	                        ']'
 	                    ) : null
 	                )
