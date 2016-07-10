@@ -108,10 +108,11 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var Web3 = __webpack_require__(/*! web3 */ 226);
+	var CryptoJS = __webpack_require__(/*! crypto-js */ 233);
 	
 	//import Select from 'react-bootstrap-select';
 	
-	var abi = [{ "constant": true, "inputs": [{ "name": "", "type": "bytes32" }], "name": "trackNumberRecords", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" }, { "constant": false, "inputs": [], "name": "kill", "outputs": [], "type": "function" }, { "constant": false, "inputs": [], "name": "getRevenue", "outputs": [], "type": "function" }, { "constant": true, "inputs": [{ "name": "", "type": "bytes32" }, { "name": "", "type": "uint256" }], "name": "pet", "outputs": [{ "name": "timestamp", "type": "uint256" }, { "name": "typeAttribute", "type": "uint8" }, { "name": "attributeText", "type": "string" }], "type": "function" }, { "constant": true, "inputs": [], "name": "collectedRevenue", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" }, { "constant": true, "inputs": [], "name": "owner", "outputs": [{ "name": "", "type": "address" }], "type": "function" }, { "constant": false, "inputs": [], "name": "isOwner", "outputs": [{ "name": "", "type": "bool" }], "type": "function" }, { "constant": true, "inputs": [], "name": "costToAdd", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" }, { "constant": false, "inputs": [{ "name": "_petid", "type": "bytes32" }, { "name": "_type", "type": "uint8" }, { "name": "_attribute", "type": "string" }], "name": "addAttribute", "outputs": [], "type": "function" }, { "inputs": [], "type": "constructor" }, { "anonymous": false, "inputs": [{ "indexed": false, "name": "_petid", "type": "bytes32" }, { "indexed": false, "name": "_type", "type": "PetTracker.PossibleAttributes" }, { "indexed": false, "name": "_attribute", "type": "string" }], "name": "attributeAdded", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": false, "name": "_petid", "type": "bytes32" }, { "indexed": false, "name": "error", "type": "string" }], "name": "attributeError", "type": "event" }];
+	var abi = [{ "constant": true, "inputs": [{ "name": "", "type": "bytes32" }], "name": "trackNumberRecords", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" }, { "constant": false, "inputs": [], "name": "kill", "outputs": [], "type": "function" }, { "constant": false, "inputs": [], "name": "getRevenue", "outputs": [], "type": "function" }, { "constant": true, "inputs": [{ "name": "", "type": "bytes32" }, { "name": "", "type": "uint256" }], "name": "pet", "outputs": [{ "name": "timestamp", "type": "uint256" }, { "name": "typeAttribute", "type": "uint256" }, { "name": "attributeText", "type": "string" }], "type": "function" }, { "constant": true, "inputs": [], "name": "collectedRevenue", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" }, { "constant": true, "inputs": [], "name": "owner", "outputs": [{ "name": "", "type": "address" }], "type": "function" }, { "constant": true, "inputs": [], "name": "costToAdd", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" }, { "constant": false, "inputs": [{ "name": "_petid", "type": "bytes32" }, { "name": "_type", "type": "uint256" }, { "name": "_attribute", "type": "string" }], "name": "addAttribute", "outputs": [], "type": "function" }, { "inputs": [], "type": "constructor" }, { "anonymous": false, "inputs": [{ "indexed": false, "name": "_petid", "type": "bytes32" }, { "indexed": false, "name": "_type", "type": "uint256" }, { "indexed": false, "name": "_attribute", "type": "string" }], "name": "attributeAdded", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": false, "name": "_petid", "type": "bytes32" }, { "indexed": false, "name": "error", "type": "string" }], "name": "attributeError", "type": "event" }];
 	var port = 8545;
 	var url = 'http://localhost:' + port;
 	var web3 = new Web3(new Web3.providers.HttpProvider(url));
@@ -119,8 +120,9 @@
 	var selection = ["Temperament", "Name", "Owner", //this will be encrypted
 	"Address" //this will be encrypted
 	];
+	
 	web3.eth.defaultAccount = web3.eth.accounts[0];
-	var contract = web3.eth.contract(abi).at('0x7205B72038Baa9948bF795899779bbdF895A5C38');
+	var contract = web3.eth.contract(abi).at('0x3c8F2e129587DcD3bD418d52646966C8686a06AE'); //'0xdC2960Aed131B3D9052a11810e5c57bD08Fa79F6'
 	var Main = _react2.default.createClass({
 	    displayName: 'Main',
 	    getInitialState: function getInitialState() {
@@ -138,28 +140,36 @@
 	    },
 	
 	    getAllRecords: function getAllRecords(id) {
-	        var maxIndex = contract.trackNumberRecords(id).c[0];
+	        var hashId = web3.sha3(id);
+	        var maxIndex = contract.trackNumberRecords(hashId).c[0];
 	        var currentResults = [];
 	        for (var i = 0; i < maxIndex; ++i) {
-	            var val = contract.pet(id, i);
-	            currentResults.push({ timestamp: new Date(val[0].c[0] * 1000), attributeType: val[1].c[0], attributeText: val[2] });
+	            var val = contract.pet(hashId, i);
+	            var attributeText = CryptoJS.AES.decrypt(val[2], id).toString(CryptoJS.enc.Utf8);
+	            currentResults.push({ timestamp: new Date(val[0].c[0] * 1000), attributeType: val[1].c[0], attributeText: attributeText });
 	        }
 	        return currentResults;
 	    },
 	    orderResults: function orderResults() {
 	        var results = this.getAllRecords(this.state.petId);
 	        console.log(results);
-	        var res1 = alasql("SELECT MAX(timestamp) as mx, attributeType FROM $0 p GROUP BY attributeType", [results]);
-	        var res = alasql("SELECT t1.* FROM ? t1 INNER JOIN ? t2 ON t1.mx=t2.timestamp and t1.attributeType=t2.attributeType", [results, res1]);
-	        var name = alasql("SELECT attributeText FROM ? WHERE attributeType=1", [res]); //name
-	        var owner = alasql("SELECT attributeText FROM ? WHERE attributeType=2", [res]); //owner
-	        this.getHistoricalResults(results);
-	        this.setState({
-	            currentData: res,
-	            name: name[0].attributeText,
-	            owner: owner[0].attributeText,
-	            successSearch: results.length > 0
-	        });
+	        if (results.length > 0) {
+	            var res1 = alasql("SELECT MAX(timestamp) as mx, attributeType FROM $0 p GROUP BY attributeType", [results]);
+	            var res = alasql("SELECT t1.* FROM ? t1 INNER JOIN ? t2 ON t1.mx=t2.timestamp and t1.attributeType=t2.attributeType", [results, res1]);
+	            var name = alasql("SELECT attributeText FROM ? WHERE attributeType=1", [res]); //name
+	            var owner = alasql("SELECT attributeText FROM ? WHERE attributeType=2", [res]); //owner
+	            this.getHistoricalResults(results);
+	            this.setState({
+	                currentData: res,
+	                name: name.length > 0 ? name[0].attributeText : "",
+	                owner: owner.length > 0 ? owner[0].attributeText : "",
+	                successSearch: results.length > 0
+	            });
+	        } else {
+	            this.setState({
+	                successSearch: false
+	            });
+	        }
 	    },
 	    getHistoricalResults: function getHistoricalResults(results) {
 	        var res = results;
@@ -176,30 +186,31 @@
 	            alert("Not enough Ether!");
 	            return;
 	        }
-	        contract.addAttribute.sendTransaction(this.state.petId, this.state.attributeType, this.state.attributeValue, { value: contract.costToAdd(), gas: 3000000 }, function (err, results) {
+	        var attributeValue = CryptoJS.AES.encrypt(this.state.attributeValue, this.state.petId).toString();
+	        var hashedPetId = web3.sha3(this.state.petId);
+	        contract.addAttribute.sendTransaction(hashedPetId, this.state.attributeType, attributeValue, { value: contract.costToAdd(), gas: 3000000 }, function (err, results) {
 	            if (err) {
 	                console.log(err);
 	                console.log(results);
 	            } else {
 	                console.log(results);
 	                alert("Transaction Complete!");
-	                self.getHistoricalResults();
 	            }
 	        });
-	        contract.attributeError({ _petid: this.state.petId }, function (error, result) {
+	        contract.attributeError( /*{_petid:hashedPetId},*/function (error, result) {
 	            if (error) {
 	                console.log(error);
 	                return;
 	            }
-	            console.log(results);
+	            console.log(result);
 	        });
-	        contract.attributeAdded({ _petid: this.state.petId }, function (error, result) {
+	        contract.attributeAdded( /*{_petid:hashedPetId},*/function (error, result) {
 	            if (error) {
 	                console.log(error);
 	                return;
 	            }
-	            console.log(results);
-	            this.orderResults();
+	            console.log(result);
+	            self.orderResults();
 	        });
 	    },
 	    onId: function onId(event) {
@@ -379,7 +390,7 @@
 	                            ),
 	                            _react2.default.createElement(
 	                                _FormControl2.default,
-	                                { componentClass: 'select', placeholder: 'select', disabled: !this.state.successSearch, onChange: this.onAttributeType },
+	                                { componentClass: 'select', placeholder: 'select', disabled: !this.state.petId, onChange: this.onAttributeType },
 	                                selection.map(function (val, index) {
 	                                    return _react2.default.createElement(
 	                                        'option',
@@ -397,7 +408,7 @@
 	                                null,
 	                                'Value'
 	                            ),
-	                            _react2.default.createElement(_FormControl2.default, { type: 'text', disabled: !this.state.successSearch, onChange: this.onAttributeValue })
+	                            _react2.default.createElement(_FormControl2.default, { type: 'text', disabled: !this.state.petId, onChange: this.onAttributeValue })
 	                        ),
 	                        _react2.default.createElement(
 	                            _Button2.default,
