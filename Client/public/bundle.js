@@ -197,14 +197,14 @@
 	                alert("Transaction Complete!");
 	            }
 	        });
-	        contract.attributeError( /*{_petid:hashedPetId},*/function (error, result) {
+	        contract.attributeError({ _petid: hashedPetId }, function (error, result) {
 	            if (error) {
 	                console.log(error);
 	                return;
 	            }
 	            console.log(result);
 	        });
-	        contract.attributeAdded( /*{_petid:hashedPetId},*/function (error, result) {
+	        contract.attributeAdded({ _petid: hashedPetId }, function (error, result) {
 	            if (error) {
 	                console.log(error);
 	                return;
