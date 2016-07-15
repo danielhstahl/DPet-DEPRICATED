@@ -56,7 +56,10 @@ const Main=React.createClass({
         }
         return currentResults;
     },
-    orderResults:function(){
+    orderResults:function(e){
+		if(e){
+			e.preventDefault();
+		}
         var results=this.getAllRecords(this.state.petId);
         console.log(results);
         if(results.length>0){
@@ -180,12 +183,12 @@ const Main=React.createClass({
             <Grid>
                 <Row className="show-grid">
                     <Col xs={12} md={2}>
-                        
+                        <form onSubmit={this.orderResults}>
                             <FormGroup>
                                 <FormControl type="text" placeholder="Pet ID" onChange={this.onId}/>
                             </FormGroup>
                             <Button bsStyle="primary" onClick={this.orderResults}>Search</Button>
-
+						</form>
 
                     </Col>
                     <Col xs={12} md={6}>
