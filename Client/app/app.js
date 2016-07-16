@@ -9,6 +9,7 @@ import Grid from 'react-bootstrap/lib/Grid';
 import FormGroup from 'react-bootstrap/lib/FormGroup';
 import Form from 'react-bootstrap/lib/Form';
 import InputGroup from 'react-bootstrap/lib/InputGroup';
+import Input from 'react-bootstrap/lib/Input';
 import Table from 'react-bootstrap/lib/Table';
 import Checkbox from 'react-bootstrap/lib/Checkbox';
 import ControlLabel from 'react-bootstrap/lib/ControlLabel';
@@ -38,23 +39,25 @@ var contract = web3.eth.contract(abi).at(contractAddress); //'0xdC2960Aed131B3D9
 const TblRow=React.createClass({
     getInitialState(){
         return {
-            attributeText:this.props.attributeText
+            attributeText:this.props.attributeText,
+            isEncrypted:this.props.isEncrypted
         };
     },
     decrypt(password){
         this.setState({
-            attributeText:CryptoJS.AES.decrypt(this.state.attributeText, password).toString(CryptoJS.enc.Utf8)
+            attributeText:CryptoJS.AES.decrypt(this.state.attributeText, password).toString(CryptoJS.enc.Utf8),
+            isEncrypted:false
         });
     },
     render(){
         var self=this;
         return(
         <Row>             
-            <Col xs={4} >{this.props.timestamp}</Col>
+            <Col xs={7} >{this.props.timestamp}</Col>
             <Col xs={2}>{this.props.label}</Col>
-            <Col xs={4} >{this.state.attributeText}</Col>
-            <Col xs={2}> 
-                <Button disabled={!this.props.isEncrypted} onClick={function(){self.props.onDecrypt(self.decrypt);}}>Decrypt</Button>
+            <Col xs={3} >{this.state.isEncrypted?
+                <Button disabled={!this.props.isEncrypted} onClick={function(){self.props.onDecrypt(self.decrypt);}}>Decrypt</Button>:
+                this.state.attributeText}
             </Col>
         </Row>
         );
@@ -78,6 +81,7 @@ const Main=React.createClass({
             isCreator:web3.eth.defaultAccount==contract.owner()
         }
     },
+
     getAllRecords:function(id){
         var hashId=web3.sha3(id);
         var maxIndex=contract.trackNumberRecords(hashId).c[0];
@@ -125,7 +129,6 @@ const Main=React.createClass({
         });
     },
     showPasswordModal(passwordFunction){
-        console.log(passwordFunction);
         this.setState({
             askForPassword:true,
             myPasswordFunction:passwordFunction
@@ -203,10 +206,8 @@ const Main=React.createClass({
         });      
     },
     onPassword(){
-        //console.log(doSomethingWithPassword);
         this.setState({askForPassword: false}, 
             function(){
-                console.log(this.state.password);
                 this.state.myPasswordFunction(this.state.password);
                 this.setState({password:""});
             }
@@ -235,11 +236,8 @@ const Main=React.createClass({
                     <h1>DPets</h1>
                     <p>Input and access animal records: decentralized, immutable, and secure</p>
                     <Row>
-                        <Col xs={2}>
-                            <Button bsStyle="primary" onClick={this.showModal}>Learn more</Button>
-                    
-                        </Col>
-                        <Col xs={6}>
+                        
+                        <Col xs={4}>
                             <Form inline onSubmit={this.orderResults}>
                                 <FormGroup>
                                     <FormControl type="text" placeholder="Pet ID" onChange={this.onId}/>
@@ -247,8 +245,11 @@ const Main=React.createClass({
                                 <Button bsStyle="primary" onClick={this.orderResults}>Search</Button>
                             </Form>
                         </Col>
-
-                        <Col xs={4}>
+                        <Col xs={2}>
+                            <Button bsStyle="primary" onClick={this.showModal}>Learn more</Button>
+                    
+                        </Col>
+                        <Col xs={6}>
                             {this.state.isCreator?
                                 <Button bsStyle="success" onClick={this.claimReward}>Claim Reward [Currently { web3.fromWei(web3.eth.getBalance(contractAddress)).toString()} Ether]</Button>
                             :null}
@@ -282,12 +283,11 @@ const Main=React.createClass({
                 <form onSubmit={function(e){e.preventDefault();self.onPassword();}}>
                     <FormGroup>
                         <ControlLabel>Password</ControlLabel>
-                        <FormControl inputRef={function(input) {
-                            console.log(input);
-                            if (input != null) {
-                                input.focus();
-                            }
-                            }} 
+                        <Input ref={function(input) {
+                                if (input&&input.refs && input.refs.input) {
+                                    input.refs.input.focus();
+                                }
+                            }}
                             type="password" onChange={this.setPassword}/>
                     </FormGroup>
                     <Button bsStyle="primary" onClick={function(){self.onPassword();}}>Submit</Button>
@@ -299,7 +299,11 @@ const Main=React.createClass({
             <Grid>
                 <Row className="show-grid">
                     
-                   
+                   <Col xs={12} md={6}>
+                        {this.state.successSearch?
+                            <div size={16}>Hello {this.state.owner}, {this.state.name} is in good hands! Did something new happen in {this.state.name}'s life?  Record it on the right!  Or view current and past events below.</div>
+                        :null}
+                    </Col>
                     <Col xs={12} md={6}>
                         
                         <FormGroup>
@@ -320,32 +324,21 @@ const Main=React.createClass({
                         <Button bsStyle="primary" onClick={this.addAttribute}>Submit New Result (costs Ether)</Button>
                         
                     </Col>
-                     <Col xs={12} md={6}>
-                        {this.state.successSearch?
-                            <Row>
-                                <Col xs={6}><b> Name</b></Col>
-                                <Col xs={6}><b> Owner</b></Col>
-                                <Col xs={6}>{this.state.name}</Col>
-                                <Col xs={6}>{this.state.owner}</Col>
-                            </Row>
-                        :null}
-                    </Col>
+                     
                 </Row>
                 <div className='whiteSpace'></div>
                 <Row>
                     {this.state.successSearch?
-                    <Col xs={12}>
+                    <Col xs={6}>
                         <Row>
-                            <Col xs={4}>
+                            <Col xs={7}>
                                 <b>TimeStamp</b>
                             </Col>
                             <Col xs={2}>
                                 <b>Attribute</b>
                             </Col>
-                            <Col xs={4}>
+                            <Col xs={3}>
                                 <b>Value</b>
-                            </Col>
-                            <Col xs={2}>
                             </Col>
                         </Row>
                         {this.state.historicalData.map(function(val, index){
@@ -359,6 +352,10 @@ const Main=React.createClass({
 
                 </Row>
             </Grid>
+            <div className='whiteSpace'></div>
+            <div className='whiteSpace'></div>
+            <div className='whiteSpace'></div>
+            <div className='whiteSpace'></div>
             </div>
         );
     }
