@@ -7,8 +7,10 @@ import Button from 'react-bootstrap/lib/Button';
 import FormControl from 'react-bootstrap/lib/FormControl';
 import Grid from 'react-bootstrap/lib/Grid';
 import FormGroup from 'react-bootstrap/lib/FormGroup';
+import Form from 'react-bootstrap/lib/Form';
 import InputGroup from 'react-bootstrap/lib/InputGroup';
 import Table from 'react-bootstrap/lib/Table';
+import Checkbox from 'react-bootstrap/lib/Checkbox';
 import ControlLabel from 'react-bootstrap/lib/ControlLabel';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 import Row from 'react-bootstrap/lib/Row';
@@ -16,7 +18,7 @@ import Col from 'react-bootstrap/lib/Col';
 import Modal from 'react-bootstrap/lib/Modal';
 //import Select from 'react-bootstrap-select';
 
-var abi =[{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"trackNumberRecords","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"constant":false,"inputs":[],"name":"kill","outputs":[],"type":"function"},{"constant":false,"inputs":[],"name":"getRevenue","outputs":[],"type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes32"},{"name":"","type":"uint256"}],"name":"pet","outputs":[{"name":"timestamp","type":"uint256"},{"name":"typeAttribute","type":"uint256"},{"name":"attributeText","type":"string"}],"type":"function"},{"constant":true,"inputs":[],"name":"collectedRevenue","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"type":"function"},{"constant":true,"inputs":[],"name":"costToAdd","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"constant":false,"inputs":[{"name":"_petid","type":"bytes32"},{"name":"_type","type":"uint256"},{"name":"_attribute","type":"string"}],"name":"addAttribute","outputs":[],"type":"function"},{"inputs":[],"type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_petid","type":"bytes32"},{"indexed":false,"name":"_type","type":"uint256"},{"indexed":false,"name":"_attribute","type":"string"}],"name":"attributeAdded","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_petid","type":"bytes32"},{"indexed":false,"name":"error","type":"string"}],"name":"attributeError","type":"event"}];
+var abi =[{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"trackNumberRecords","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"constant":false,"inputs":[{"name":"_petid","type":"bytes32"},{"name":"_type","type":"uint256"},{"name":"_attribute","type":"string"},{"name":"_isEncrypted","type":"bool"}],"name":"addAttribute","outputs":[],"type":"function"},{"constant":false,"inputs":[],"name":"kill","outputs":[],"type":"function"},{"constant":false,"inputs":[],"name":"getRevenue","outputs":[],"type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes32"},{"name":"","type":"uint256"}],"name":"pet","outputs":[{"name":"timestamp","type":"uint256"},{"name":"typeAttribute","type":"uint256"},{"name":"attributeText","type":"string"},{"name":"isEncrypted","type":"bool"}],"type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"type":"function"},{"constant":true,"inputs":[],"name":"costToAdd","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"inputs":[],"type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_petid","type":"bytes32"},{"indexed":false,"name":"_type","type":"uint256"}],"name":"attributeAdded","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_petid","type":"bytes32"},{"indexed":false,"name":"error","type":"string"}],"name":"attributeError","type":"event"}];
 var port=8545;
 var url='http://localhost:'+port; 
 var web3 = new Web3(new Web3.providers.HttpProvider(url));
@@ -24,13 +26,41 @@ console.log(web3.eth.accounts);
 const selection=[
     "Temperament",
     "Name",
-    "Owner", //this will be encrypted
-    "Address" //this will be encrypted
+    "Owner", //this can be encrypted
+    "Address" //this can be encrypted
 ];
 
 web3.eth.defaultAccount=web3.eth.accounts[0];
-var contractAddress='0x44549eD75e1940b2E1B5533a3c28E81E28eEA2a5';//  '0x3c8F2e129587DcD3bD418d52646966C8686a06AE';
+var contractAddress='0x69De4ADbb566c1c68e8dB1274229adA4A3D9f8A8';//  
+//var contractAddress='0x44549eD75e1940b2E1B5533a3c28E81E28eEA2a5';//  '0x3c8F2e129587DcD3bD418d52646966C8686a06AE';
 var contract = web3.eth.contract(abi).at(contractAddress); //'0xdC2960Aed131B3D9052a11810e5c57bD08Fa79F6'
+
+const TblRow=React.createClass({
+    getInitialState(){
+        return {
+            attributeText:this.props.attributeText
+        };
+    },
+    decrypt(password){
+        this.setState({
+            attributeText:CryptoJS.AES.decrypt(this.state.attributeText, password).toString(CryptoJS.enc.Utf8)
+        });
+    },
+    render(){
+        var self=this;
+        return(
+        <Row>             
+            <Col xs={4} >{this.props.timestamp}</Col>
+            <Col xs={2}>{this.props.label}</Col>
+            <Col xs={4} >{this.state.attributeText}</Col>
+            <Col xs={2}> 
+                <Button disabled={!this.props.isEncrypted} onClick={function(){self.props.onDecrypt(self.decrypt);}}>Decrypt</Button>
+            </Col>
+        </Row>
+        );
+    }
+});
+
 const Main=React.createClass({
     getInitialState(){
         return {
@@ -42,6 +72,9 @@ const Main=React.createClass({
             successSearch:false,
             currentData:null,
             historicalData:null,
+            addedEncryption:true,
+            askForPassword:false,
+            myPasswordFunction:function(){},
             isCreator:web3.eth.defaultAccount==contract.owner()
         }
     },
@@ -52,7 +85,7 @@ const Main=React.createClass({
         for(var i=0; i<maxIndex;++i){
             var val=contract.pet(hashId, i);
             var attributeText=CryptoJS.AES.decrypt(val[2], id).toString(CryptoJS.enc.Utf8);
-            currentResults.push({timestamp:new Date(val[0].c[0]*1000), attributeType:val[1].c[0], attributeText:attributeText});
+            currentResults.push({timestamp:new Date(val[0].c[0]*1000), attributeType:val[1].c[0], attributeText:attributeText, isEncrypted:val[3]});
         }
         return currentResults;
     },
@@ -91,15 +124,35 @@ const Main=React.createClass({
             historicalData:res
         });
     },
+    showPasswordModal(passwordFunction){
+        console.log(passwordFunction);
+        this.setState({
+            askForPassword:true,
+            myPasswordFunction:passwordFunction
+        });
+    },
     addAttribute:function(){
         var self=this;
         if(contract.costToAdd().greaterThan(web3.eth.getBalance(web3.eth.defaultAccount))){
             alert("Not enough Ether!");
             return;
         }
-        var attributeValue = CryptoJS.AES.encrypt(this.state.attributeValue, this.state.petId).toString();
+        if(this.state.addedEncryption){
+            this.showPasswordModal(self.onCheckEncryption);
+        }
+        else{
+            this.onCheckEncryption();
+        }
+    },
+    onCheckEncryption:function(password){
+        var self=this;
+        var attributeValue =this.state.attributeValue;
+        if(password){
+            attributeValue=CryptoJS.AES.encrypt(this.state.attributeValue, password).toString();
+        }
+        attributeValue = CryptoJS.AES.encrypt(attributeValue, this.state.petId).toString();
         var hashedPetId=web3.sha3(this.state.petId);
-        contract.addAttribute.sendTransaction(hashedPetId, this.state.attributeType, attributeValue, {value:contract.costToAdd(), gas:3000000}, function(err, results){
+        contract.addAttribute.sendTransaction(hashedPetId, this.state.attributeType, attributeValue, this.state.addedEncryption, {value:contract.costToAdd(), gas:3000000}, function(err, results){
             if(err){
                 console.log(err);
                 console.log(results);
@@ -141,10 +194,33 @@ const Main=React.createClass({
     hideModal() {
         this.setState({show: false});
     },
+    hidePasswordModal(){
+        this.setState({askForPassword: false});
+    },
     onAttributeValue(event){
         this.setState({
             attributeValue:event.target.value
         });      
+    },
+    onPassword(){
+        //console.log(doSomethingWithPassword);
+        this.setState({askForPassword: false}, 
+            function(){
+                console.log(this.state.password);
+                this.state.myPasswordFunction(this.state.password);
+                this.setState({password:""});
+            }
+        );
+    },
+    onAdditionalEncryption(){
+        this.setState({
+            addedEncryption:!this.state.addedEncryption
+        });
+    },
+    setPassword(e){
+        this.setState({
+            password:e.target.value
+        });
     },
     claimReward(){
         contract.getRevenue();
@@ -158,10 +234,27 @@ const Main=React.createClass({
                 <Grid>
                     <h1>DPets</h1>
                     <p>Input and access animal records: decentralized, immutable, and secure</p>
-                    <Button bsStyle="primary" onClick={this.showModal}>Learn more</Button>
-                    {this.state.isCreator?
-                        <Button bsStyle="success" onClick={this.claimReward}>Claim Reward [Currently {web3.eth.getBalance(contractAddress).toString()}]</Button>
-                    :null}
+                    <Row>
+                        <Col xs={2}>
+                            <Button bsStyle="primary" onClick={this.showModal}>Learn more</Button>
+                    
+                        </Col>
+                        <Col xs={6}>
+                            <Form inline onSubmit={this.orderResults}>
+                                <FormGroup>
+                                    <FormControl type="text" placeholder="Pet ID" onChange={this.onId}/>
+                                </FormGroup>
+                                <Button bsStyle="primary" onClick={this.orderResults}>Search</Button>
+                            </Form>
+                        </Col>
+
+                        <Col xs={4}>
+                            {this.state.isCreator?
+                                <Button bsStyle="success" onClick={this.claimReward}>Claim Reward [Currently { web3.fromWei(web3.eth.getBalance(contractAddress)).toString()} Ether]</Button>
+                            :null}
+                            
+                        </Col>
+                     </Row>   
                 </Grid>
             </Jumbotron>
             <Modal
@@ -180,36 +273,34 @@ const Main=React.createClass({
                 <Button onClick={this.hideModal}>Close</Button>
             </Modal.Footer>
             </Modal>
+            <Modal
+                show={this.state.askForPassword}
+                onHide={this.cancelPassword}
+                dialogClassName="custom-modal"
+            >
+            <Modal.Body>
+                <form onSubmit={function(e){e.preventDefault();self.onPassword();}}>
+                    <FormGroup>
+                        <ControlLabel>Password</ControlLabel>
+                        <FormControl inputRef={function(input) {
+                            console.log(input);
+                            if (input != null) {
+                                input.focus();
+                            }
+                            }} 
+                            type="password" onChange={this.setPassword}/>
+                    </FormGroup>
+                    <Button bsStyle="primary" onClick={function(){self.onPassword();}}>Submit</Button>
+                </form>
+            </Modal.Body>
+            
+            </Modal>
+
             <Grid>
                 <Row className="show-grid">
-                    <Col xs={12} md={2}>
-                        <form onSubmit={this.orderResults}>
-                            <FormGroup>
-                                <FormControl type="text" placeholder="Pet ID" onChange={this.onId}/>
-                            </FormGroup>
-                            <Button bsStyle="primary" onClick={this.orderResults}>Search</Button>
-						</form>
-
-                    </Col>
+                    
+                   
                     <Col xs={12} md={6}>
-                        {this.state.successSearch?
-                        <Table striped bordered condensed hover>
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Owner</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>{this.state.name}</td>
-                                    <td>{this.state.owner}</td>
-                                </tr>
-                            </tbody>
-                        </Table>
-                        :null}
-                    </Col>
-                    <Col xs={12} md={4}>
                         
                         <FormGroup>
                             <ControlLabel>Type</ControlLabel>
@@ -223,35 +314,46 @@ const Main=React.createClass({
                         <FormGroup>
                             <ControlLabel>Value</ControlLabel>
                             <FormControl type="text" disabled={!this.state.petId}  onChange={this.onAttributeValue}/>
+                            
                         </FormGroup>
+                        <Checkbox disabled={!this.state.petId} checked={this.state.addedEncryption} onChange={this.onAdditionalEncryption}>Additional Encryption</Checkbox>
                         <Button bsStyle="primary" onClick={this.addAttribute}>Submit New Result (costs Ether)</Button>
                         
+                    </Col>
+                     <Col xs={12} md={6}>
+                        {this.state.successSearch?
+                            <Row>
+                                <Col xs={6}><b> Name</b></Col>
+                                <Col xs={6}><b> Owner</b></Col>
+                                <Col xs={6}>{this.state.name}</Col>
+                                <Col xs={6}>{this.state.owner}</Col>
+                            </Row>
+                        :null}
                     </Col>
                 </Row>
                 <div className='whiteSpace'></div>
                 <Row>
                     {this.state.successSearch?
                     <Col xs={12}>
-                    <Table striped bordered condensed hover>
-                        <thead>
-                            <tr>
-                                <th>TimeStamp</th>
-                                <th>Attribute</th>
-                                <th>Value</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {this.state.historicalData.map(function(val, index){
-                                return(
-                                <tr key={index}>
-                                    
-                                    <td >{val.timestamp.toString()}</td>
-                                    <td >{selection[val.attributeType]||"Unknown"}</td>
-                                    <td >{val.attributeText}</td>
-                                </tr>)
-                            })}
-                        </tbody>
-                    </Table>
+                        <Row>
+                            <Col xs={4}>
+                                <b>TimeStamp</b>
+                            </Col>
+                            <Col xs={2}>
+                                <b>Attribute</b>
+                            </Col>
+                            <Col xs={4}>
+                                <b>Value</b>
+                            </Col>
+                            <Col xs={2}>
+                            </Col>
+                        </Row>
+                        {this.state.historicalData.map(function(val, index){
+                            return(
+                                <TblRow key={index} timestamp={val.timestamp.toString()} attributeText={val.attributeText}  label={selection[val.attributeType]||"Unknown"} isEncrypted={val.isEncrypted} onDecrypt={self.showPasswordModal}/>
+                            );
+                        })}
+
                     </Col>
                     :null}
 

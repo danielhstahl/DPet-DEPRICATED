@@ -15,35 +15,35 @@ contract PetTracker{
       uint timestamp;
       uint typeAttribute;
       string attributeText;
+      bool isEncrypted;
     }
     function PetTracker(){ //owner is creator of contract
       owner=msg.sender;
     }
     mapping(bytes32=> mapping(uint=> Attribute) ) public pet; // hash of pet id to array of attributes
     mapping(bytes32=> uint) public trackNumberRecords; //number of records that a given pet has
-    event attributeAdded(bytes32 _petid, uint _type, string _attribute);
+    event attributeAdded(bytes32 _petid, uint _type);
     event attributeError(bytes32 _petid, string error);
-    function addAttribute(bytes32 _petid, uint _type, string _attribute){
+    function addAttribute(bytes32 _petid, uint _type, string _attribute, bool _isEncrypted){
       if(msg.value<costToAdd){
         attributeError(_petid, "Too little Ether"); 
         //while this is a failsafe, the client should also check for this.  simply scrape the "costToAdd" variable
         return;
       }
-      //collectedRevenue+=costToAdd;
       uint256 excess=msg.value-costToAdd;
       if(excess>0){
         msg.sender.send(excess);
       }
       if(trackNumberRecords[_petid]>0){ //if pet already exists in the blockchain
-        pet[_petid][trackNumberRecords[_petid]]=Attribute(now, _type, _attribute);
+        pet[_petid][trackNumberRecords[_petid]]=Attribute(now, _type, _attribute, _isEncrypted);
         trackNumberRecords[_petid]+=1;
       }
       else{ //create a new record for this pet
         trackNumberRecords[_petid]=1;
-        pet[_petid][0]=Attribute(now, _type, _attribute);
+        pet[_petid][0]=Attribute(now, _type, _attribute, _isEncrypted);
         
       }
-      attributeAdded(_petid, _type, _attribute); //alert watchers that transaction went through
+      attributeAdded(_petid, _type); //alert watchers that transaction went through
     }
     function kill() onlyOwner{
       selfdestruct(owner); // Makes contract inactive, returns funds
