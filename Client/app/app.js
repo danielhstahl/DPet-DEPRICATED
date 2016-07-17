@@ -49,13 +49,14 @@ const TblRow=React.createClass({
             isEncrypted:false
         });
     },
+
     render(){
         var self=this;
         return(
         <Row>             
-            <Col xs={7} >{this.props.timestamp}</Col>
-            <Col xs={2}>{this.props.label}</Col>
-            <Col xs={3} >{this.state.isEncrypted?
+            <Col xsHidden sm={7} >{this.props.timestamp}</Col>
+            <Col xs={6} sm={2}>{this.props.label}</Col>
+            <Col xs={6} sm={3} >{this.state.isEncrypted?
                 <Button disabled={!this.props.isEncrypted} onClick={function(){self.props.onDecrypt(self.decrypt);}}>Decrypt</Button>:
                 this.state.attributeText}
             </Col>
@@ -237,7 +238,7 @@ const Main=React.createClass({
                     <p>Input and access animal records: decentralized, immutable, and secure</p>
                     <Row>
                         
-                        <Col xs={4}>
+                        <Col xs={12} sm={8} md={4}>
                             <Form inline onSubmit={this.orderResults}>
                                 <FormGroup>
                                     <FormControl type="text" placeholder="Pet ID" onChange={this.onId}/>
@@ -245,11 +246,11 @@ const Main=React.createClass({
                                 <Button bsStyle="primary" onClick={this.orderResults}>Search</Button>
                             </Form>
                         </Col>
-                        <Col xs={2}>
+                        <Col xs={12} sm={4} md={2}>
                             <Button bsStyle="primary" onClick={this.showModal}>Learn more</Button>
                     
                         </Col>
-                        <Col xs={6}>
+                        <Col xs={12} sm={12} md={6}>
                             {this.state.isCreator?
                                 <Button bsStyle="success" onClick={this.claimReward}>Claim Reward [Currently { web3.fromWei(web3.eth.getBalance(contractAddress)).toString()} Ether]</Button>
                             :null}
@@ -329,15 +330,15 @@ const Main=React.createClass({
                 <div className='whiteSpace'></div>
                 <Row>
                     {this.state.successSearch?
-                    <Col xs={6}>
+                    <Col xs={12} md={6}>
                         <Row>
-                            <Col xs={7}>
+                            <Col xsHidden sm={7}>
                                 <b>TimeStamp</b>
                             </Col>
-                            <Col xs={2}>
+                            <Col xs={6} sm={2}>
                                 <b>Attribute</b>
                             </Col>
-                            <Col xs={3}>
+                            <Col xs={6} sm={3}>
                                 <b>Value</b>
                             </Col>
                         </Row>
