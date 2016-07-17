@@ -235,10 +235,10 @@ const Main=React.createClass({
              <Jumbotron>
                 <Grid>
                     <h1>DPets</h1>
-                    <p>Input and access animal records: decentralized, immutable, and secure</p>
+                    <p>Input and access animal records: decentralized, immutable, and secure.  <a  onClick={this.showModal}>Learn More!</a></p>
                     <Row>
                         
-                        <Col xs={12} sm={8} md={4}>
+                        <Col xs={12} sm={6} md={6}>
                             <Form inline onSubmit={this.orderResults}>
                                 <FormGroup>
                                     <FormControl type="text" placeholder="Pet ID" onChange={this.onId}/>
@@ -246,11 +246,7 @@ const Main=React.createClass({
                                 <Button bsStyle="primary" onClick={this.orderResults}>Search</Button>
                             </Form>
                         </Col>
-                        <Col xs={12} sm={4} md={2}>
-                            <Button bsStyle="primary" onClick={this.showModal}>Learn more</Button>
-                    
-                        </Col>
-                        <Col xs={12} sm={12} md={6}>
+                        <Col xs={12} sm={6} md={6}>
                             {this.state.isCreator?
                                 <Button bsStyle="success" onClick={this.claimReward}>Claim Reward [Currently { web3.fromWei(web3.eth.getBalance(contractAddress)).toString()} Ether]</Button>
                             :null}

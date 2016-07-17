@@ -361,14 +361,19 @@
 	                    _react2.default.createElement(
 	                        'p',
 	                        null,
-	                        'Input and access animal records: decentralized, immutable, and secure'
+	                        'Input and access animal records: decentralized, immutable, and secure.  ',
+	                        _react2.default.createElement(
+	                            'a',
+	                            { onClick: this.showModal },
+	                            'Learn More!'
+	                        )
 	                    ),
 	                    _react2.default.createElement(
 	                        _Row2.default,
 	                        null,
 	                        _react2.default.createElement(
 	                            _Col2.default,
-	                            { xs: 12, sm: 8, md: 4 },
+	                            { xs: 12, sm: 6, md: 6 },
 	                            _react2.default.createElement(
 	                                _Form2.default,
 	                                { inline: true, onSubmit: this.orderResults },
@@ -386,16 +391,7 @@
 	                        ),
 	                        _react2.default.createElement(
 	                            _Col2.default,
-	                            { xs: 12, sm: 4, md: 2 },
-	                            _react2.default.createElement(
-	                                _Button2.default,
-	                                { bsStyle: 'primary', onClick: this.showModal },
-	                                'Learn more'
-	                            )
-	                        ),
-	                        _react2.default.createElement(
-	                            _Col2.default,
-	                            { xs: 12, sm: 12, md: 6 },
+	                            { xs: 12, sm: 6, md: 6 },
 	                            this.state.isCreator ? _react2.default.createElement(
 	                                _Button2.default,
 	                                { bsStyle: 'success', onClick: this.claimReward },
