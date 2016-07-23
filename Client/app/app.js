@@ -23,29 +23,19 @@ var abi =[{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"track
 //var port=30303;
 var port=8545;
 var url='http://localhost:'+port; 
+
+const contractAddress='0x69De4ADbb566c1c68e8dB1274229adA4A3D9f8A8';
+const blockChainView='https://testnet.etherscan.io/address/';
 //var web3="";
 //var web3 = new Web3(new Web3.providers.HttpProvider(url));
 
-if(typeof web3 !== 'undefined' && typeof Web3 !== 'undefined') {
-    // If there's a web3 library loaded, then make your own web3
-    var web3 = new Web3(web3.currentProvider);
-} else {
-    // If there isn't then set a provider
-    var web3 = new localWeb3(new Web3.providers.HttpProvider(url));
-}
-console.log(web3.eth.accounts);
+//'0xdC2960Aed131B3D9052a11810e5c57bD08Fa79F6'
 const selection=[
     "Temperament",
     "Name",
     "Owner", //this can be encrypted
     "Address" //this can be encrypted
 ];
-
-web3.eth.defaultAccount=web3.eth.accounts[0];
-var contractAddress='0x69De4ADbb566c1c68e8dB1274229adA4A3D9f8A8';//  
-//var contractAddress='0x44549eD75e1940b2E1B5533a3c28E81E28eEA2a5';//  '0x3c8F2e129587DcD3bD418d52646966C8686a06AE';
-var contract = web3.eth.contract(abi).at(contractAddress); //'0xdC2960Aed131B3D9052a11810e5c57bD08Fa79F6'
-
 const TblRow=React.createClass({
     getInitialState(){
         return {
@@ -74,7 +64,6 @@ const TblRow=React.createClass({
         );
     }
 });
-
 const Main=React.createClass({
     getInitialState(){
         return {
@@ -89,16 +78,16 @@ const Main=React.createClass({
             addedEncryption:true,
             askForPassword:false,
             myPasswordFunction:function(){},
-            isCreator:web3.eth.defaultAccount==contract.owner()
+            isCreator:this.props.web3.eth.defaultAccount==this.props.contract.owner()
         }
     },
 
     getAllRecords:function(id){
-        var hashId=web3.sha3(id);
-        var maxIndex=contract.trackNumberRecords(hashId).c[0];
+        var hashId=this.props.web3.sha3(id);
+        var maxIndex=this.props.contract.trackNumberRecords(hashId).c[0];
         var currentResults=[];
         for(var i=0; i<maxIndex;++i){
-            var val=contract.pet(hashId, i);
+            var val=this.props.contract.pet(hashId, i);
             var attributeText=CryptoJS.AES.decrypt(val[2], id).toString(CryptoJS.enc.Utf8);
             currentResults.push({timestamp:new Date(val[0].c[0]*1000), attributeType:val[1].c[0], attributeText:attributeText, isEncrypted:val[3]});
         }
@@ -147,7 +136,7 @@ const Main=React.createClass({
     },
     addAttribute:function(){
         var self=this;
-        if(contract.costToAdd().greaterThan(web3.eth.getBalance(web3.eth.defaultAccount))){
+        if(this.props.contract.costToAdd().greaterThan(this.props.web3.eth.getBalance(this.props.web3.eth.defaultAccount))){
             alert("Not enough Ether!");
             return;
         }
@@ -165,8 +154,8 @@ const Main=React.createClass({
             attributeValue=CryptoJS.AES.encrypt(this.state.attributeValue, password).toString();
         }
         attributeValue = CryptoJS.AES.encrypt(attributeValue, this.state.petId).toString();
-        var hashedPetId=web3.sha3(this.state.petId);
-        contract.addAttribute.sendTransaction(hashedPetId, this.state.attributeType, attributeValue, this.state.addedEncryption, {value:contract.costToAdd(), gas:3000000}, function(err, results){
+        var hashedPetId=this.props.web3.sha3(this.state.petId);
+        this.props.contract.addAttribute.sendTransaction(hashedPetId, this.state.attributeType, attributeValue, this.state.addedEncryption, {value:this.props.contract.costToAdd(), gas:3000000}, function(err, results){
             if(err){
                 console.log(err);
                 console.log(results);
@@ -176,14 +165,14 @@ const Main=React.createClass({
                 alert("Transaction Complete!");
             }
         });
-        contract.attributeError({_petid:hashedPetId}, function(error, result){
+        this.props.contract.attributeError({_petid:hashedPetId}, function(error, result){
             if(error){
                 console.log(error);
                 return;
             }
             console.log(result);
         });
-        contract.attributeAdded({_petid:hashedPetId}, function(error, result){
+        this.props.contract.attributeAdded({_petid:hashedPetId}, function(error, result){
             if(error){
                 console.log(error);
                 return;
@@ -235,7 +224,7 @@ const Main=React.createClass({
         });
     },
     claimReward(){
-        contract.getRevenue();
+        this.props.contract.getRevenue();
         alert("Reward Claimed");
     },
     render(){
@@ -258,7 +247,7 @@ const Main=React.createClass({
                         </Col>
                         <Col xs={12} sm={6} md={6}>
                             {this.state.isCreator?
-                                <Button bsStyle="success" onClick={this.claimReward}>Claim Reward [Currently { web3.fromWei(web3.eth.getBalance(contractAddress)).toString()} Ether]</Button>
+                                <Button bsStyle="success" onClick={this.claimReward}>Claim Reward [Currently { this.props.web3.fromWei(this.props.web3.eth.getBalance(contractAddress)).toString()} Ether]</Button>
                             :null}
                             
                         </Col>
@@ -275,7 +264,9 @@ const Main=React.createClass({
             </Modal.Header>
             <Modal.Body>
                 <h4>How it works</h4>
-                <p>Every pet should have a microchip which uniquely identifies itself.  A scanner can read the microchip and an ID is read.  For example, the ID may be 123.  This ID is then hashed and placed on the Ethereum blockchain.  The unhashed ID serves as a key to encrypt the name and address of the owner: hence the pet itself is needed in order to know who the owner and the address are (they are not public without knowing the ID of the pet).  This is not secure in the same sense that a human medical or banking record is secure; but as addresses are essentially public this is not a major issue.  If the medical records for the pet are not desired to be "public" then they can be encrypted using a key not associated with the microchip (eg, a password provided by the owners).  </p>
+                <p>Every pet should have a microchip which uniquely identifies itself.  A scanner can read the microchip and an ID is read.  For example, the ID may be 123.  This ID is then hashed and placed on the Ethereum blockchain.  The unhashed ID serves as a key to encrypt the name and address of the owner: hence the pet itself is needed in order to know who the owner and the address are (they are not public without knowing the ID of the pet).  This is not secure in the same sense that a human medical or banking record is secure; but as addresses are essentially public this is not a major issue.  If the medical records for the pet are not desired to be "public" then they can be encrypted using a key not associated with the microchip (eg, a password provided by the owners). 
+                
+                The contract that governs this is available at {contractAddress} on the blockchain.  See it <a href={blockChainView+contractAddress} target="_blank">here</a> </p>
             </Modal.Body>
             <Modal.Footer>
                 <Button onClick={this.hideModal}>Close</Button>
@@ -367,6 +358,21 @@ const Main=React.createClass({
         );
     }
 }); /**/
-ReactDOM.render((
-  <Main/>
-), document.getElementById("app"));
+window.onload =function(){
+    if(typeof web3 === 'undefined' /*&& typeof Web3 !== 'undefined'*/) {
+        var web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
+        // If there's a web3 library loaded, then make your own web3
+        //var web3 = new Web3(web3.currentProvider);
+    } /*else {
+        // If there isn't then set a provider
+        
+    }*/
+    console.log(web3.eth.accounts);
+    web3.eth.defaultAccount=web3.eth.accounts[0];
+    //  
+    //var contractAddress='0x44549eD75e1940b2E1B5533a3c28E81E28eEA2a5';//  '0x3c8F2e129587DcD3bD418d52646966C8686a06AE';
+    var contract = web3.eth.contract(abi).at(contractAddress); 
+    ReactDOM.render((
+        <Main web3={web3} contract={contract}/>
+        ), document.getElementById("app"));
+}
