@@ -563,17 +563,21 @@ webpackJsonp([0,1],[
 	    }
 	}); /**/
 	function getWeb3() {
-
+	    console.log(web3);
 	    if (typeof web3 !== 'undefined' && typeof Web3 !== 'undefined') {
+	        console.log("got to first");
 	        // If there's a web3 library loaded, then make your own web3
 	        var web3 = new Web3(web3.currentProvider);
 	    } else if (typeof Web3 !== 'undefined') {
+	        console.log("got to second");
 	        // If there isn't then set a provider
-	        var web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
+	        var web3 = new Web3(new Web3.providers.HttpProvider(url));
 	        //var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+	    } else {
+	        console.log("got to third");
+	        var web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
 	    }
 
-	    console.log(web3);
 	    //if(typeof web3 === 'undefined' /*&& typeof Web3 !== 'undefined'*/) {
 	    //var web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
 	    // If there's a web3 library loaded, then make your own web3
