@@ -19,10 +19,16 @@ var config = {
         extensions: ['', '.jsx', '.js', '.css', '.scss']
     },
     plugins:[
+        new webpack.DefinePlugin({
+            'process.env': {
+                'NODE_ENV': '"production"'
+            }
+        }),
         new webpack.optimize.CommonsChunkPlugin('common.js'),
         new webpack.optimize.DedupePlugin(),
         new webpack.optimize.UglifyJsPlugin(),
         new webpack.optimize.AggressiveMergingPlugin()
+        
     ],
     module : {
         preLoaders: [
