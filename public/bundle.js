@@ -141,10 +141,10 @@ webpackJsonp([0,1],[
 	        if (!this.props.web3) {
 	            var localWeb3 = __webpack_require__(349);
 	            var web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
-	            web3.eth.defaultAccount = web3.eth.accounts[0];
 	        } else {
 	            var web3 = this.props.web3;
 	        }
+	        web3.eth.defaultAccount = web3.eth.accounts.length > 0 ? web3.eth.accounts[0] : null;
 	        var contract = web3.eth.contract(abi).at(contractAddress);
 	        return {
 	            attributeType: 0,
