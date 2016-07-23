@@ -575,7 +575,10 @@ webpackJsonp([0,1],[
 	    var contract = web3.eth.contract(abi).at(contractAddress);
 	    _reactDom2.default.render(_react2.default.createElement(Main, { web3: web3, contract: contract }), document.getElementById("app"));
 	}
-	if (document.addEventListener) document.addEventListener("DOMContentLoaded", getWeb3, false);else if (document.attachEvent) document.attachEvent("onreadystatechange", getWeb3);else window.onload = getWeb3;
+	setTimeout(getWeb3, 3000);
+	/*if (document.addEventListener) document.addEventListener("DOMContentLoaded", getWeb3, false);
+	   else if (document.attachEvent) document.attachEvent("onreadystatechange", getWeb3);
+	   else window.onload = getWeb3;*/
 
 /***/ },
 /* 1 */
