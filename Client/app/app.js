@@ -73,7 +73,9 @@ const Main=React.createClass({
         else{
             var web3=this.props.web3;
         }
-        web3.eth.defaultAccount=web3.eth.accounts.length>0?web3.eth.accounts[0]:null;
+        if(web3.eth.accounts.length>0){
+            web3.eth.defaultAccount=web3.eth.accounts[0];
+        }
         var contract=web3.eth.contract(abi).at(contractAddress);
         return {
             attributeType:0,
