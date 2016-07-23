@@ -563,7 +563,7 @@ webpackJsonp([0,1],[
 	    }
 	}); /**/
 	function getWeb3() {
-	    console.log(document.web3);
+	    //console.log(document.web3);
 	    if (typeof document.web3 === 'undefined') {
 	        var localWeb3 = __webpack_require__(349);
 	        document.web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
