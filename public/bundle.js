@@ -74,7 +74,6 @@ webpackJsonp([0,1],[
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	//var localWeb3 = require('web3');
 	var CryptoJS = __webpack_require__(315);
 
 	//import Select from 'react-bootstrap-select';
@@ -139,6 +138,14 @@ webpackJsonp([0,1],[
 	var Main = _react2.default.createClass({
 	    displayName: 'Main',
 	    getInitialState: function getInitialState() {
+	        if (!this.props.web3) {
+	            var localWeb3 = __webpack_require__(349);
+	            var web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
+	            web3.eth.defaultAccount = web3.eth.accounts[0];
+	        } else {
+	            var web3 = this.props.web3;
+	        }
+	        var contract = web3.eth.contract(abi).at(contractAddress);
 	        return {
 	            attributeType: 0,
 	            attributeValue: "",
@@ -151,17 +158,19 @@ webpackJsonp([0,1],[
 	            addedEncryption: true,
 	            askForPassword: false,
 	            myPasswordFunction: function myPasswordFunction() {},
-	            isCreator: this.props.web3.eth.defaultAccount == this.props.contract.owner()
+	            web3: web3,
+	            contract: contract,
+	            isCreator: web3.eth.defaultAccount == contract.owner()
 	        };
 	    },
 
 
 	    getAllRecords: function getAllRecords(id) {
-	        var hashId = this.props.web3.sha3(id);
-	        var maxIndex = this.props.contract.trackNumberRecords(hashId).c[0];
+	        var hashId = this.state.web3.sha3(id);
+	        var maxIndex = this.state.contract.trackNumberRecords(hashId).c[0];
 	        var currentResults = [];
 	        for (var i = 0; i < maxIndex; ++i) {
-	            var val = this.props.contract.pet(hashId, i);
+	            var val = this.state.contract.pet(hashId, i);
 	            var attributeText = CryptoJS.AES.decrypt(val[2], id).toString(CryptoJS.enc.Utf8);
 	            currentResults.push({ timestamp: new Date(val[0].c[0] * 1000), attributeType: val[1].c[0], attributeText: attributeText, isEncrypted: val[3] });
 	        }
@@ -209,7 +218,7 @@ webpackJsonp([0,1],[
 
 	    addAttribute: function addAttribute() {
 	        var self = this;
-	        if (this.props.contract.costToAdd().greaterThan(this.props.web3.eth.getBalance(this.props.web3.eth.defaultAccount))) {
+	        if (this.state.contract.costToAdd().greaterThan(this.state.web3.eth.getBalance(this.state.web3.eth.defaultAccount))) {
 	            alert("Not enough Ether!");
 	            return;
 	        }
@@ -226,8 +235,8 @@ webpackJsonp([0,1],[
 	            attributeValue = CryptoJS.AES.encrypt(this.state.attributeValue, password).toString();
 	        }
 	        attributeValue = CryptoJS.AES.encrypt(attributeValue, this.state.petId).toString();
-	        var hashedPetId = this.props.web3.sha3(this.state.petId);
-	        this.props.contract.addAttribute.sendTransaction(hashedPetId, this.state.attributeType, attributeValue, this.state.addedEncryption, { value: this.props.contract.costToAdd(), gas: 3000000 }, function (err, results) {
+	        var hashedPetId = this.state.web3.sha3(this.state.petId);
+	        this.state.contract.addAttribute.sendTransaction(hashedPetId, this.state.attributeType, attributeValue, this.state.addedEncryption, { value: this.state.contract.costToAdd(), gas: 3000000 }, function (err, results) {
 	            if (err) {
 	                console.log(err);
 	                console.log(results);
@@ -236,14 +245,14 @@ webpackJsonp([0,1],[
 	                alert("Transaction Complete!");
 	            }
 	        });
-	        this.props.contract.attributeError({ _petid: hashedPetId }, function (error, result) {
+	        this.state.contract.attributeError({ _petid: hashedPetId }, function (error, result) {
 	            if (error) {
 	                console.log(error);
 	                return;
 	            }
 	            console.log(result);
 	        });
-	        this.props.contract.attributeAdded({ _petid: hashedPetId }, function (error, result) {
+	        this.state.contract.attributeAdded({ _petid: hashedPetId }, function (error, result) {
 	            if (error) {
 	                console.log(error);
 	                return;
@@ -293,7 +302,7 @@ webpackJsonp([0,1],[
 	        });
 	    },
 	    claimReward: function claimReward() {
-	        this.props.contract.getRevenue();
+	        this.state.contract.getRevenue();
 	        alert("Reward Claimed");
 	    },
 	    render: function render() {
@@ -350,7 +359,7 @@ webpackJsonp([0,1],[
 	                                _Button2.default,
 	                                { bsStyle: 'success', onClick: this.claimReward },
 	                                'Claim Reward [Currently ',
-	                                this.props.web3.fromWei(this.props.web3.eth.getBalance(contractAddress)).toString(),
+	                                this.state.web3.fromWei(this.state.web3.eth.getBalance(contractAddress)).toString(),
 	                                ' Ether]'
 	                            ) : null
 	                        )
@@ -562,22 +571,7 @@ webpackJsonp([0,1],[
 	        );
 	    }
 	}); /**/
-	function getWeb3() {
-	    //console.log(document.web3);
-	    if (typeof document.web3 === 'undefined') {
-	        var localWeb3 = __webpack_require__(349);
-	        document.web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
-	        document.web3.eth.defaultAccount = document.web3.eth.accounts[0];
-	    }
-	    console.log(document.web3.eth.accounts);
-
-	    // 
-	    //var contractAddress='0x44549eD75e1940b2E1B5533a3c28E81E28eEA2a5';//  '0x3c8F2e129587DcD3bD418d52646966C8686a06AE';
-	    var contract = document.web3.eth.contract(abi).at(contractAddress);
-	    _reactDom2.default.render(_react2.default.createElement(Main, { web3: document.web3, contract: contract }), document.getElementById("app"));
-	}
-	//setTimeout(getWeb3, 3000);
-	if (document.addEventListener) document.addEventListener("DOMContentLoaded", getWeb3, false);else if (document.attachEvent) document.attachEvent("onreadystatechange", getWeb3);else window.onload = getWeb3;
+	_reactDom2.default.render(_react2.default.createElement(Main, { web3: document.web3 }), document.getElementById("app"));
 
 /***/ },
 /* 1 */
