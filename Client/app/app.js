@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import injectTapEventPlugin from 'react-tap-event-plugin';
-var localWeb3 = require('web3');
 var CryptoJS = require("crypto-js");
 import Button from 'react-bootstrap/lib/Button';
 import FormControl from 'react-bootstrap/lib/FormControl';
@@ -66,6 +65,16 @@ const TblRow=React.createClass({
 });
 const Main=React.createClass({
     getInitialState(){
+        if(!this.props.web3){
+            var localWeb3 = require('web3');
+            var web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
+            
+        }
+        else{
+            var web3=this.props.web3;
+        }
+        web3.eth.defaultAccount=web3.eth.accounts.length>0?web3.eth.accounts[0]:null;
+        var contract=web3.eth.contract(abi).at(contractAddress);
         return {
             attributeType:0,
             attributeValue:"",
@@ -78,16 +87,18 @@ const Main=React.createClass({
             addedEncryption:true,
             askForPassword:false,
             myPasswordFunction:function(){},
-            isCreator:this.props.web3.eth.defaultAccount==this.props.contract.owner()
+            web3:web3,
+            contract:contract,
+            isCreator:web3.eth.defaultAccount==contract.owner()
         }
     },
 
     getAllRecords:function(id){
-        var hashId=this.props.web3.sha3(id);
-        var maxIndex=this.props.contract.trackNumberRecords(hashId).c[0];
+        var hashId=this.state.web3.sha3(id);
+        var maxIndex=this.state.contract.trackNumberRecords(hashId).c[0];
         var currentResults=[];
         for(var i=0; i<maxIndex;++i){
-            var val=this.props.contract.pet(hashId, i);
+            var val=this.state.contract.pet(hashId, i);
             var attributeText=CryptoJS.AES.decrypt(val[2], id).toString(CryptoJS.enc.Utf8);
             currentResults.push({timestamp:new Date(val[0].c[0]*1000), attributeType:val[1].c[0], attributeText:attributeText, isEncrypted:val[3]});
         }
@@ -136,7 +147,7 @@ const Main=React.createClass({
     },
     addAttribute:function(){
         var self=this;
-        if(this.props.contract.costToAdd().greaterThan(this.props.web3.eth.getBalance(this.props.web3.eth.defaultAccount))){
+        if(this.state.contract.costToAdd().greaterThan(this.state.web3.eth.getBalance(this.state.web3.eth.defaultAccount))){
             alert("Not enough Ether!");
             return;
         }
@@ -154,8 +165,8 @@ const Main=React.createClass({
             attributeValue=CryptoJS.AES.encrypt(this.state.attributeValue, password).toString();
         }
         attributeValue = CryptoJS.AES.encrypt(attributeValue, this.state.petId).toString();
-        var hashedPetId=this.props.web3.sha3(this.state.petId);
-        this.props.contract.addAttribute.sendTransaction(hashedPetId, this.state.attributeType, attributeValue, this.state.addedEncryption, {value:this.props.contract.costToAdd(), gas:3000000}, function(err, results){
+        var hashedPetId=this.state.web3.sha3(this.state.petId);
+        this.state.contract.addAttribute.sendTransaction(hashedPetId, this.state.attributeType, attributeValue, this.state.addedEncryption, {value:this.state.contract.costToAdd(), gas:3000000}, function(err, results){
             if(err){
                 console.log(err);
                 console.log(results);
@@ -165,14 +176,14 @@ const Main=React.createClass({
                 alert("Transaction Complete!");
             }
         });
-        this.props.contract.attributeError({_petid:hashedPetId}, function(error, result){
+        this.state.contract.attributeError({_petid:hashedPetId}, function(error, result){
             if(error){
                 console.log(error);
                 return;
             }
             console.log(result);
         });
-        this.props.contract.attributeAdded({_petid:hashedPetId}, function(error, result){
+        this.state.contract.attributeAdded({_petid:hashedPetId}, function(error, result){
             if(error){
                 console.log(error);
                 return;
@@ -224,7 +235,7 @@ const Main=React.createClass({
         });
     },
     claimReward(){
-        this.props.contract.getRevenue();
+        this.state.contract.getRevenue();
         alert("Reward Claimed");
     },
     render(){
@@ -247,7 +258,7 @@ const Main=React.createClass({
                         </Col>
                         <Col xs={12} sm={6} md={6}>
                             {this.state.isCreator?
-                                <Button bsStyle="success" onClick={this.claimReward}>Claim Reward [Currently { this.props.web3.fromWei(this.props.web3.eth.getBalance(contractAddress)).toString()} Ether]</Button>
+                                <Button bsStyle="success" onClick={this.claimReward}>Claim Reward [Currently { this.state.web3.fromWei(this.state.web3.eth.getBalance(contractAddress)).toString()} Ether]</Button>
                             :null}
                             
                         </Col>
@@ -358,22 +369,7 @@ const Main=React.createClass({
         );
     }
 }); /**/
-window.onload =function(){
-    console.log(web3);
-    if(typeof web3 === 'undefined' /*&& typeof Web3 !== 'undefined'*/) {
-        var web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
-        // If there's a web3 library loaded, then make your own web3
-        //var web3 = new Web3(web3.currentProvider);
-    } /*else {
-        // If there isn't then set a provider
-        
-    }*/
-    console.log(web3.eth.accounts);
-    web3.eth.defaultAccount=web3.eth.accounts[0];
-    //  
-    //var contractAddress='0x44549eD75e1940b2E1B5533a3c28E81E28eEA2a5';//  '0x3c8F2e129587DcD3bD418d52646966C8686a06AE';
-    var contract = web3.eth.contract(abi).at(contractAddress); 
-    ReactDOM.render((
-        <Main web3={web3} contract={contract}/>
-        ), document.getElementById("app"));
-}
+ReactDOM.render((
+    <Main web3={web3} />
+), document.getElementById("app"));
+
