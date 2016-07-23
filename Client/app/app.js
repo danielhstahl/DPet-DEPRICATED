@@ -330,7 +330,7 @@ const Main=React.createClass({
                             
                         </FormGroup>
                         <Checkbox disabled={!this.state.petId} checked={this.state.addedEncryption} onChange={this.onAdditionalEncryption}>Additional Encryption</Checkbox>
-                        <Button bsStyle="primary" onClick={this.addAttribute}>Submit New Result (costs Ether)</Button>
+                        <Button bsStyle="primary" onClick={this.addAttribute}>Submit New Result (costs {this.state.web3.fromWei(this.state.contract.costToAdd()).toString()} Ether)</Button>
                         
                     </Col>
                      
@@ -370,6 +370,6 @@ const Main=React.createClass({
     }
 }); /**/
 ReactDOM.render((
-    <Main web3={web3} />
+    <Main web3={typeof web3==='undefined'?"":web3} />
 ), document.getElementById("app"));
 
