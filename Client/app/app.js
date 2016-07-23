@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import injectTapEventPlugin from 'react-tap-event-plugin';
-var Web3 = require('web3');
+var localWeb3 = require('web3');
 var CryptoJS = require("crypto-js");
 import Button from 'react-bootstrap/lib/Button';
 import FormControl from 'react-bootstrap/lib/FormControl';
@@ -25,13 +25,13 @@ var port=8545;
 var url='http://localhost:'+port; 
 //var web3="";
 //var web3 = new Web3(new Web3.providers.HttpProvider(url));
+
 if(typeof web3 !== 'undefined' && typeof Web3 !== 'undefined') {
     // If there's a web3 library loaded, then make your own web3
     var web3 = new Web3(web3.currentProvider);
 } else {
     // If there isn't then set a provider
-
-    var web3 = new Web3(new Web3.providers.HttpProvider(url));
+    var web3 = new localWeb3(new Web3.providers.HttpProvider(url));
 }
 console.log(web3.eth.accounts);
 const selection=[
