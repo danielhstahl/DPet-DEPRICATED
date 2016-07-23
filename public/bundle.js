@@ -571,7 +571,7 @@ webpackJsonp([0,1],[
 	        );
 	    }
 	}); /**/
-	_reactDom2.default.render(_react2.default.createElement(Main, { web3: document.web3 }), document.getElementById("app"));
+	_reactDom2.default.render(_react2.default.createElement(Main, { web3: web3 }), document.getElementById("app"));
 
 /***/ },
 /* 1 */
