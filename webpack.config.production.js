@@ -7,6 +7,7 @@ var rootBuild=path.resolve(__dirname, 'build');
 var APP_DIR = path.resolve(__dirname, 'Client/app');
 fs.copySync(path.resolve(__dirname,rootApp+'/index.html'), rootBuild+'/index.html');
 fs.copySync(path.resolve(__dirname,rootApp+'/alasql.min.js'), rootBuild+'/alasql.min.js');
+fs.copySync(path.resolve(__dirname,rootApp+'/favicon.png'), rootBuild+'/favicon.png');
 
 var config = {
     entry: APP_DIR + '/app.js',
