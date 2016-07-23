@@ -563,22 +563,21 @@ webpackJsonp([0,1],[
 	    }
 	}); /**/
 	function getWeb3() {
-	    console.log(web3);
-	    if (typeof web3 === 'undefined') {
+	    console.log(document.web3);
+	    if (typeof document.web3 === 'undefined') {
 	        var localWeb3 = __webpack_require__(349);
-	        var web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
+	        document.web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
+	        document.web3.eth.defaultAccount = document.web3.eth.accounts[0];
 	    }
-	    console.log(web3.eth.accounts);
-	    web3.eth.defaultAccount = web3.eth.accounts[0];
+	    console.log(document.web3.eth.accounts);
+
 	    // 
 	    //var contractAddress='0x44549eD75e1940b2E1B5533a3c28E81E28eEA2a5';//  '0x3c8F2e129587DcD3bD418d52646966C8686a06AE';
-	    var contract = web3.eth.contract(abi).at(contractAddress);
-	    _reactDom2.default.render(_react2.default.createElement(Main, { web3: web3, contract: contract }), document.getElementById("app"));
+	    var contract = document.web3.eth.contract(abi).at(contractAddress);
+	    _reactDom2.default.render(_react2.default.createElement(Main, { web3: document.web3, contract: contract }), document.getElementById("app"));
 	}
-	setTimeout(getWeb3, 3000);
-	/*if (document.addEventListener) document.addEventListener("DOMContentLoaded", getWeb3, false);
-	   else if (document.attachEvent) document.attachEvent("onreadystatechange", getWeb3);
-	   else window.onload = getWeb3;*/
+	//setTimeout(getWeb3, 3000);
+	if (document.addEventListener) document.addEventListener("DOMContentLoaded", getWeb3, false);else if (document.attachEvent) document.attachEvent("onreadystatechange", getWeb3);else window.onload = getWeb3;
 
 /***/ },
 /* 1 */
