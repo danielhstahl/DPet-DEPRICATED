@@ -27,7 +27,7 @@ var config = {
         new webpack.optimize.CommonsChunkPlugin('common.js'),
         new webpack.optimize.DedupePlugin(),
         new webpack.optimize.UglifyJsPlugin(),
-        new webpack.optimize.AggressiveMergingPlugin()
+        //new webpack.optimize.AggressiveMergingPlugin()
         
     ],
     module : {

@@ -359,6 +359,7 @@ const Main=React.createClass({
     }
 }); /**/
 window.onload =function(){
+    console.log(web3);
     if(typeof web3 === 'undefined' /*&& typeof Web3 !== 'undefined'*/) {
         var web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
         // If there's a web3 library loaded, then make your own web3
