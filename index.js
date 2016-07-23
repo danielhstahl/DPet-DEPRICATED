@@ -50,7 +50,7 @@ fs.stat(pswd, function(err, stats) {
     }
 }); 
 function runGeth(){
-    var isOpen=false;
+    /*var isOpen=false;
     const geth = spawn( 'geth', [ '--rpc', '--rpccorsdomain=*', '--testnet', '--unlock=0', '--password='+passwordFileName, '--rpcapi="db,eth,net,web3,personal"', ' --rpcport="8545"', '--rpcaddr="localhost"']); 
     geth.stdout.on('data', data=>{
     });
@@ -72,7 +72,7 @@ function runGeth(){
         else if(!isOpen){
             console.log("Please wait...");
         }
-    });
+    });*/
 }
 
     
