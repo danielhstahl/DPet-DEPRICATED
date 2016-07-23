@@ -571,9 +571,10 @@ webpackJsonp([0,1],[
 	    } else if (typeof Web3 !== 'undefined') {
 	        console.log("got to second");
 	        console.log(Web3);
-	        console.log(Web3.currentProvider);
+	        console.log(Web3().currentProvider);
 	        // If there isn't then set a provider
-	        var web3 = new Web3(new Web3.providers.HttpProvider(url));
+	        //var web3 = new Web3(new Web3.providers.HttpProvider(url));
+	        var web3 = new Web3(new Web3().currentProvider);
 	        //var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 	    } else {
 	        console.log("got to third");
