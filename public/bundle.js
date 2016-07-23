@@ -563,15 +563,26 @@ webpackJsonp([0,1],[
 	    }
 	}); /**/
 	function getWeb3() {
+
+	    if (typeof web3 !== 'undefined' && typeof Web3 !== 'undefined') {
+	        // If there's a web3 library loaded, then make your own web3
+	        var web3 = new Web3(web3.currentProvider);
+	    } else if (typeof Web3 !== 'undefined') {
+	        // If there isn't then set a provider
+	        var web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
+	        //var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+	    }
+
 	    console.log(web3);
-	    if (typeof web3 === 'undefined' /*&& typeof Web3 !== 'undefined'*/) {
-	            var web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
-	            // If there's a web3 library loaded, then make your own web3
-	            //var web3 = new Web3(web3.currentProvider);
-	        } /*else {
-	            // If there isn't then set a provider
-	            
-	          }*/
+	    //if(typeof web3 === 'undefined' /*&& typeof Web3 !== 'undefined'*/) {
+	    //var web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
+	    // If there's a web3 library loaded, then make your own web3
+	    //var web3 = new Web3(web3.currentProvider);
+	    //}
+	    /*else {
+	        // If there isn't then set a provider
+	        
+	    }*/
 	    console.log(web3.eth.accounts);
 	    web3.eth.defaultAccount = web3.eth.accounts[0];
 	    // 
