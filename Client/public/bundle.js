@@ -141,13 +141,21 @@ webpackJsonp([0,1],[
 	var Main = _react2.default.createClass({
 	    displayName: 'Main',
 	    getInitialState: function getInitialState() {
+	        var onLocalOrMist = true;
 	        if (!this.props.web3) {
 	            var localWeb3 = __webpack_require__(/*! web3 */ 349);
-	            var web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
+	            try {
+	                var web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
+	            } catch (err) {
+	                console.log(err);
+	                onLocalOrMist = false;
+	            }
 	        } else {
 	            var web3 = this.props.web3;
 	        }
-	        web3.eth.defaultAccount = web3.eth.accounts.length > 0 ? web3.eth.accounts[0] : null;
+	        if (web3.eth.accounts.length > 0) {
+	            web3.eth.defaultAccount = web3.eth.accounts[0];
+	        }
 	        var contract = web3.eth.contract(abi).at(contractAddress);
 	        return {
 	            attributeType: 0,
@@ -163,6 +171,7 @@ webpackJsonp([0,1],[
 	            myPasswordFunction: function myPasswordFunction() {},
 	            web3: web3,
 	            contract: contract,
+	            onLocalOrMist: onLocalOrMist,
 	            isCreator: web3.eth.defaultAccount == contract.owner()
 	        };
 	    },
@@ -334,7 +343,17 @@ webpackJsonp([0,1],[
 	                            'Learn More!'
 	                        )
 	                    ),
-	                    _react2.default.createElement(
+	                    !this.state.onLocalOrMist ? _react2.default.createElement(
+	                        'p',
+	                        null,
+	                        'You are not on an Ethereum web browser.  Download one from ',
+	                        _react2.default.createElement(
+	                            'a',
+	                            { href: 'https://github.com/ethereum/mist/releases' },
+	                            'here'
+	                        )
+	                    ) : null,
+	                    this.state.onLocalOrMist ? _react2.default.createElement(
 	                        _Row2.default,
 	                        null,
 	                        _react2.default.createElement(
@@ -366,7 +385,7 @@ webpackJsonp([0,1],[
 	                                ' Ether]'
 	                            ) : null
 	                        )
-	                    )
+	                    ) : null
 	                )
 	            ),
 	            _react2.default.createElement(
