@@ -51,7 +51,7 @@ fs.stat(pswd, function(err, stats) {
 }); 
 function runGeth(){
     var isOpen=false;
-    const geth = spawn( 'geth', [ '--rpc', '--rpccorsdomain=*', '--testnet', '--unlock=0', '--password='+passwordFileName, '--rpcapi="db,eth,net,web3,personal"', ' --rpcport="8545"', '--rpcaddr="localhost"']); 
+    const geth = spawn( 'geth', [ '--rpc', '--rpccorsdomain=*', '--testnet', '--unlock=0', '--password='+passwordFileName, '--rpcapi="db,eth,net,web3,personal"', ' --rpcport="8545"', '--rpcaddr="localhost"', '--fast']); 
     geth.stdout.on('data', data=>{
     });
     geth.stderr.on( 'data', data => { //for some reason Geth prints to stderr....
@@ -60,7 +60,7 @@ function runGeth(){
         var indexOfUnlocked=data.indexOf("Unlocked account");
         var indexOfServer=data.indexOf("Starting Server");
         if(indexOfImported>0 && !isOpen) {
-            open('http://localhost:3500');
+            //open('http://localhost:3500');
             isOpen=true;
         }
         else if (indexOfUnlocked>0){
