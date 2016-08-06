@@ -84,8 +84,8 @@ webpackJsonp([0,1],[
 	var abi = [{ "constant": true, "inputs": [{ "name": "", "type": "bytes32" }], "name": "trackNumberRecords", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" }, { "constant": false, "inputs": [{ "name": "_petid", "type": "bytes32" }, { "name": "_type", "type": "uint256" }, { "name": "_attribute", "type": "string" }, { "name": "_isEncrypted", "type": "bool" }], "name": "addAttribute", "outputs": [], "type": "function" }, { "constant": false, "inputs": [], "name": "kill", "outputs": [], "type": "function" }, { "constant": false, "inputs": [], "name": "getRevenue", "outputs": [], "type": "function" }, { "constant": true, "inputs": [{ "name": "", "type": "bytes32" }, { "name": "", "type": "uint256" }], "name": "pet", "outputs": [{ "name": "timestamp", "type": "uint256" }, { "name": "typeAttribute", "type": "uint256" }, { "name": "attributeText", "type": "string" }, { "name": "isEncrypted", "type": "bool" }], "type": "function" }, { "constant": true, "inputs": [], "name": "owner", "outputs": [{ "name": "", "type": "address" }], "type": "function" }, { "constant": true, "inputs": [], "name": "costToAdd", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" }, { "inputs": [], "type": "constructor" }, { "anonymous": false, "inputs": [{ "indexed": false, "name": "_petid", "type": "bytes32" }, { "indexed": false, "name": "_type", "type": "uint256" }], "name": "attributeAdded", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": false, "name": "_petid", "type": "bytes32" }, { "indexed": false, "name": "error", "type": "string" }], "name": "attributeError", "type": "event" }];
 	//var port=30303;
 	var port = 8545;
-	var url = 'http://localhost:' + port;
-	
+	var url = 'http://' + window.location.hostname + ':' + port;
+	console.log(url);
 	var contractAddress = '0x69De4ADbb566c1c68e8dB1274229adA4A3D9f8A8';
 	var blockChainView = 'https://testnet.etherscan.io/address/';
 	//var web3="";
@@ -143,20 +143,25 @@ webpackJsonp([0,1],[
 	    getInitialState: function getInitialState() {
 	        var onLocalOrMist = true;
 	        if (!this.props.web3) {
-	            var localWeb3 = __webpack_require__(/*! web3 */ 349);
-	            try {
-	                var web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
-	            } catch (err) {
-	                console.log(err);
+	            if (window.location.protocol === "https:") {
 	                onLocalOrMist = false;
+	                var web3 = "";
+	            } else {
+	                //local development
+	                var localWeb3 = __webpack_require__(/*! web3 */ 349);
+	                var web3 = new localWeb3(new localWeb3.providers.HttpProvider(url));
 	            }
 	        } else {
 	            var web3 = this.props.web3;
 	        }
-	        if (web3.eth.accounts.length > 0) {
-	            web3.eth.defaultAccount = web3.eth.accounts[0];
+	        var contract = "";
+	        if (onLocalOrMist) {
+	            if (web3.eth.accounts.length > 0) {
+	                web3.eth.defaultAccount = web3.eth.accounts[0];
+	            }
+	            var contract = web3.eth.contract(abi).at(contractAddress);
 	        }
-	        var contract = web3.eth.contract(abi).at(contractAddress);
+	
 	        return {
 	            attributeType: 0,
 	            attributeValue: "",
@@ -172,7 +177,7 @@ webpackJsonp([0,1],[
 	            web3: web3,
 	            contract: contract,
 	            onLocalOrMist: onLocalOrMist,
-	            isCreator: web3.eth.defaultAccount == contract.owner()
+	            isCreator: web3 ? web3.eth.defaultAccount == contract.owner() : false
 	        };
 	    },
 	
@@ -350,7 +355,7 @@ webpackJsonp([0,1],[
 	                        _react2.default.createElement(
 	                            'a',
 	                            { href: 'https://github.com/ethereum/mist/releases' },
-	                            'here'
+	                            'here.'
 	                        )
 	                    ) : null,
 	                    this.state.onLocalOrMist ? _react2.default.createElement(
@@ -421,7 +426,7 @@ webpackJsonp([0,1],[
 	                        _react2.default.createElement(
 	                            'a',
 	                            { href: blockChainView + contractAddress, target: '_blank' },
-	                            'here'
+	                            'here.'
 	                        ),
 	                        ' '
 	                    )
@@ -476,7 +481,7 @@ webpackJsonp([0,1],[
 	                    )
 	                )
 	            ),
-	            _react2.default.createElement(
+	            this.state.onLocalOrMist ? _react2.default.createElement(
 	                _Grid2.default,
 	                null,
 	                _react2.default.createElement(
@@ -587,7 +592,7 @@ webpackJsonp([0,1],[
 	                        })
 	                    ) : null
 	                )
-	            ),
+	            ) : null,
 	            _react2.default.createElement('div', { className: 'whiteSpace' }),
 	            _react2.default.createElement('div', { className: 'whiteSpace' }),
 	            _react2.default.createElement('div', { className: 'whiteSpace' }),
