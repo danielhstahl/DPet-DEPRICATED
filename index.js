@@ -61,6 +61,7 @@ function runGeth(){
         var indexOfServer=data.indexOf("Starting Server");
         if(indexOfImported>0 && !isOpen) {
             //open('http://localhost:3500');
+            console.log("open");
             isOpen=true;
         }
         else if (indexOfUnlocked>0){
