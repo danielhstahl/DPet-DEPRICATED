@@ -18,8 +18,10 @@
     "react-bootstrap": "^0.29.5",
     "react-dom": "^15.1.0",
     "react-tap-event-plugin": "^1.0.0",
+    "serialport": "^4.0.1",
     "web3": "^0.17.0-alpha",
-    "webpack": "^1.13.1"
+    "webpack": "^1.13.1",
+    "ws": "^1.1.1"
   },
   "devDependencies": {},
   "scripts": {

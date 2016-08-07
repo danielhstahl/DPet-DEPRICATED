@@ -5,6 +5,10 @@ var fs=require('fs');
 var open = require('open');
 var CryptoJS = require("crypto-js");
 var Web3 = require('web3');
+var SerialPort=require("serialport");
+
+
+
 var web3=new Web3();
 app.use(express.static(path.join(__dirname, 'Client'))); //  "public" off of current is root
 const port=3500;
@@ -88,10 +92,20 @@ function runWeb3(){
         web3.eth.defaultAccount=web3.eth.accounts[0];
     }
     var contract=web3.eth.contract(abi).at(contractAddress);
-    var results=getAttributes(contract, '123');
-    console.log(results);
+    var sPort=new SerialPort("/dev/ttyS0");
+    sPort.on('open', ()=>{
+        console.log("opened");
+        //port.write('hello world');
+    });
+    sPort.on('data', (data)=>{
+        data=data.toString();
+        data=data.replace(/ /g, "");
+        if(data){
+            var results=getAttributes(contract, data);
+            //send to all clients via websockets here
+        } 
+    });
 }
-
 function getAttributes(contract, id){
     var hashId=web3.sha3(id);
     var maxIndex=contract.trackNumberRecords(hashId).c[0];
