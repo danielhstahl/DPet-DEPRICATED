@@ -4,8 +4,10 @@ var path = require('path');
 var fs=require('fs');
 var open = require('open');
 app.use(express.static(path.join(__dirname, 'Client'))); //  "public" off of current is root
-app.listen(3500);
+const port=3500;
+app.listen(port);
 const spawn = require( 'child_process' ).spawn;
+const exec = require( 'child_process' ).exec;
 const readline = require('readline');
 const rl = readline.createInterface({
   input: process.stdin,
@@ -60,8 +62,8 @@ function runGeth(){
         var indexOfUnlocked=data.indexOf("Unlocked account");
         var indexOfServer=data.indexOf("Starting Server");
         if(indexOfImported>0 && !isOpen) {
-            //open('http://localhost:3500');
-            console.log("open");
+            open('http://localhost:3500');
+            //console.log("open");
             isOpen=true;
         }
         else if (indexOfUnlocked>0){
@@ -74,6 +76,7 @@ function runGeth(){
             console.log("Please wait...");
         }
     });
+    
 }
 
     
