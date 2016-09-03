@@ -1,5 +1,5 @@
 ## Note: this currently runs on the Morden Testnet.
-
+This app is a view-only version of DPet.  To actually write and scan microchips, use https://github.com/phillyfan1138/DPetEmbedded.
 ## Production (mist): 
 
 Download mist from https://github.com/ethereum/mist/releases.  Add accounts as necessary.  Then navigate to https://phillyfan1138.github.io/DPet/.  This will only run in the Mist browser.
