@@ -10,7 +10,7 @@
 contract PetTracker{
     uint256 constant public costToAdd=100000000000000000;// .1 ether
     address public owner;
-    modifier onlyOwner { if (msg.sender == owner) _ } //ensure only owner does some things
+    modifier onlyOwner { if (msg.sender == owner) _; } //ensure only owner does some things
     struct Attribute{
       uint timestamp;
       uint typeAttribute;
