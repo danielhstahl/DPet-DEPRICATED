@@ -23,7 +23,7 @@ var abi =[{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"track
 var port=8545;
 var url='http://'+window.location.hostname+':'+port; 
 console.log(url);
-const contractAddress='0x69De4ADbb566c1c68e8dB1274229adA4A3D9f8A8';
+const contractAddress='0x72c1bba9cabab4040c285159c8ea98fd36372858';
 const blockChainView='https://testnet.etherscan.io/address/';
 //var web3="";
 //var web3 = new Web3(new Web3.providers.HttpProvider(url));
