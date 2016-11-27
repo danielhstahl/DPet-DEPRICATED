@@ -18,7 +18,7 @@ import Col from 'react-bootstrap/lib/Col';
 import Modal from 'react-bootstrap/lib/Modal';
 //import Select from 'react-bootstrap-select';
 
-var abi =[{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"trackNumberRecords","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"constant":false,"inputs":[{"name":"_petid","type":"bytes32"},{"name":"_type","type":"uint256"},{"name":"_attribute","type":"string"},{"name":"_isEncrypted","type":"bool"}],"name":"addAttribute","outputs":[],"type":"function"},{"constant":false,"inputs":[],"name":"kill","outputs":[],"type":"function"},{"constant":false,"inputs":[],"name":"getRevenue","outputs":[],"type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes32"},{"name":"","type":"uint256"}],"name":"pet","outputs":[{"name":"timestamp","type":"uint256"},{"name":"typeAttribute","type":"uint256"},{"name":"attributeText","type":"string"},{"name":"isEncrypted","type":"bool"}],"type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"type":"function"},{"constant":true,"inputs":[],"name":"costToAdd","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"inputs":[],"type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_petid","type":"bytes32"},{"indexed":false,"name":"_type","type":"uint256"}],"name":"attributeAdded","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_petid","type":"bytes32"},{"indexed":false,"name":"error","type":"string"}],"name":"attributeError","type":"event"}];
+var abi =[{"constant":false,"inputs":[],"name":"kill","outputs":[],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"getRevenue","outputs":[],"payable":true,"type":"function"},{"constant":true,"inputs":[{"name":"_petid","type":"bytes32"},{"name":"index","type":"uint256"}],"name":"getAttribute","outputs":[{"name":"","type":"uint256"},{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"costToAdd","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_petid","type":"bytes32"}],"name":"getNumberOfAttributes","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_petid","type":"bytes32"},{"name":"_attribute","type":"string"}],"name":"addAttribute","outputs":[],"payable":true,"type":"function"},{"inputs":[],"type":"constructor"},{"payable":false,"type":"fallback"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_petid","type":"bytes32"},{"indexed":false,"name":"_attribute","type":"string"}],"name":"attributeAdded","type":"event"}];
 //var port=30303;
 var port=8545;
 var url='http://'+window.location.hostname+':'+port; 
@@ -108,12 +108,13 @@ const Main=React.createClass({
 
     getAllRecords:function(id){
         var hashId=this.state.web3.sha3(id);
-        var maxIndex=this.state.contract.trackNumberRecords(hashId).c[0];
+        var maxIndex=this.state.contract.getNumberOfAttributes(hashId).c[0];
         var currentResults=[];
         for(var i=0; i<maxIndex;++i){
-            var val=this.state.contract.pet(hashId, i);
-            var attributeText=CryptoJS.AES.decrypt(val[2], id).toString(CryptoJS.enc.Utf8);
-            currentResults.push({timestamp:new Date(val[0].c[0]*1000), attributeType:val[1].c[0], attributeText:attributeText, isEncrypted:val[3]});
+            var val=this.state.contract.getAttribute(hashId, i);
+            console.log(val);
+            /*var attributeText=CryptoJS.AES.decrypt(val[2], id).toString(CryptoJS.enc.Utf8);
+            currentResults.push({timestamp:new Date(val[0].c[0]*1000), attributeType:val[1].c[0], attributeText:attributeText, isEncrypted:val[3]});*/
         }
         return currentResults;
     },
@@ -179,7 +180,9 @@ const Main=React.createClass({
         }
         attributeValue = CryptoJS.AES.encrypt(attributeValue, this.state.petId).toString();
         var hashedPetId=this.state.web3.sha3(this.state.petId);
-        this.state.contract.addAttribute.sendTransaction(hashedPetId, this.state.attributeType, attributeValue, this.state.addedEncryption, {value:this.state.contract.costToAdd(), gas:3000000}, function(err, results){
+        var tmpObj={};
+        tmpObj[this.state.attributeType]=attributeValue;
+        this.state.contract.addAttribute.sendTransaction(hashedPetId, JSON.stringify(tmpObj), {value:this.state.contract.costToAdd(), gas:3000000}, function(err, results){
             if(err){
                 console.log(err);
                 console.log(results);
@@ -189,13 +192,13 @@ const Main=React.createClass({
                 alert("Transaction Complete!");
             }
         });
-        this.state.contract.attributeError({_petid:hashedPetId}, function(error, result){
+        /*this.state.contract.attributeError({_petid:hashedPetId}, function(error, result){
             if(error){
                 console.log(error);
                 return;
             }
             console.log(result);
-        });
+        });*/
         this.state.contract.attributeAdded({_petid:hashedPetId}, function(error, result){
             if(error){
                 console.log(error);
